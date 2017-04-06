@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>ECharts</title>
+    <script src="comments.js"></script>
+    <script src="stock.js"></script>
+    <script src="echarts.js"></script>
+</head>
+
+<body>
+    <div id="main" style="width: 1200px;height:800px;"></div>
+    <script type="text/javascript">
+    var myChart = echarts.init(document.getElementById('main'));
+
+    var commentData = [];
+    var commentNumData = [];
+    var stockData = [];
+    var tmpStockValue = 0;
+    var colors = ['#5793f3', '#d14a61', '#ffffff'];
+    //2015-7-11 to 2016-6-24
+    //月份6代表7月 故意-1了
+    var now = new Date(2015, 6, 12);
+    var oneDay = 24 * 3600 * 1000;
+    for (var i = 0; i < 350; i++) {
+        now = new Date(+now + oneDay);
+        month = now.getMonth() + 1;
+        if (month < 10) {
+            month = '0' + month;
+        }
+        dateStr = now.getFullYear() + '-' + month + '-' + now.getDate();
+        if (typeof(stock.get(dateStr)) == "undefined") {
+            stockData.push({
+                name: dateStr,
+                value: [dateStr, tmpStockValue]
+            });
+        } else {
+            //console.log(dateStr+':'+stock.get(dateStr));
+            stockData.push({
+                name: dateStr,
+                value: [dateStr, stock.get(dateStr)]
+            });
+            tmpStockValue = stock.get(dateStr);
+        }
+        if (typeof(comments.get(dateStr)) == "undefined") {
+            commentData.push({
+                name: dateStr,
+                value: [dateStr, 0]
+            });
+            commentNumData.push({
+                name: dateStr,
+                value: [dateStr, 0]
+            });
+        } else {
+            //console.log(dateStr+':'+comments.get(dateStr));
+            var commentValue = comments.get(dateStr);
+            commentData.push({
+                name: dateStr,
+                value: [dateStr, commentValue[0]]
+            });
+            commentNumData.push({
+                name: dateStr,
+                value: [dateStr, commentValue[1]]
+            });
+        }
+    }
+
+    var option = {
+        title: {
+            text: '股票评价与股价走势关系图'
+        },
+        tooltip: {
+            trigger: 'axis'
+        },
+        legend: {
+            data: ['股价走势', '评价指数', '评价人数']
+        },
+        xAxis: {
+            type: 'time',
+            axisTick: {
+                alignWithLabel: true
+            },
+            splitLine: {
+                show: false
+            }
+        },
+        yAxis: [{
+            type: 'value',
+            name: '股价走势',
+            position: 'left',
+            axisLine: {
+                lineStyle: {
+                    color: colors[1]
+                }
+            },
+            axisLabel: {
+                formatter: '¥{value}'
+            },
+            splitLine: {
+                show: false
+            }
+        }, {
+            type: 'value',
+            name: '评价指数',
+            position: 'right',
+            min: -1,
+            max: 1,
+            axisLine: {
+                lineStyle: {
+                    color: colors[0]
+                }
+            },
+            axisLabel: {
+                formatter: '{value}'
+            },
+            splitLine: {
+                show: false
+            }
+        }, {
+            type: 'value',
+            name: '评论人数',
+            position: 'right',
+            max: 100000,
+            min: 0,
+            offset: 200,
+            axisLine: {
+                lineStyle: {
+                    color: colors[2]
+                }
+            },
+            axisLabel: {
+                formatter: '{value}'
+            },
+            splitLine: {
+                show: false
+            }
+        }],
+        series: [{
+            name: '股价走势',
+            type: 'line',
+            yAxisIndex: 0,
+            data: stockData
+        }, {
+            name: '评价指数',
+            type: 'bar',
+            yAxisIndex: 1,
+            data: commentData
+        }, {
+            name: '评论人数',
+            type: 'bar',
+            yAxisIndex: 2,
+            data: commentNumData
+        }]
+    };
+    myChart.setOption(option);
+    </script>
+</body>
+
+</html>
